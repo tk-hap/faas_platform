@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko-{{ tag }}
+spec:
+  containers:
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+        - "--dockerfile=Dockerfile"
+        - "--context=git://github.com/tk-hap/faas_platform.git#refs/heads/function-templates"
+        - "--context-sub-path={{ context_sub_path }}"
+        - "--destination={{ registry }}:{{ tag }}"
+      volumeMounts:
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker/
+  restartPolicy: Never
+  volumes:
+    - name: kaniko-secret
+      secret:
+        secretName: kaniko-secret
