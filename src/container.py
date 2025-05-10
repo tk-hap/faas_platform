@@ -3,19 +3,15 @@ import yaml
 import time
 from uuid import uuid4
 from jinja2 import Environment, FileSystemLoader
-from kubernetes import client, config, utils
-from utils import k8s_client
-import pprint
+from kubernetes import client, utils
 
-#TODO: Auth from within cluster https://github.com/kubernetes-client/python/blob/master/examples/in_cluster_config.py
-config.load_config()
-k8s_api = client.ApiClient()
+from .utils import k8s_client
 
 
 class ContainerImage:
-    def __init__(self, language, tag=str(uuid4())):
+    def __init__(self, language: str, tag: str = None):
         self.language = language
-        self.tag = tag
+        self.tag =  tag if tag else str(uuid4())
         self.registry = "docker.io/tkhap/faas-func"
 
     def Build(self, context_path: str, k8s: client.ApiClient):
@@ -31,8 +27,7 @@ class ContainerImage:
 
         utils.create_from_dict(k8s, builder_dict, verbose=True)
 
-        k8s_client.wait_for_completed(f"kaniko-{container.tag}", "default", 35)
-
+        k8s_client.wait_for_completed(f"kaniko-{self.tag}", "default", 35)
         return
 
 
@@ -45,7 +40,7 @@ def render_manifest(dir_path: str, file_name: str, template_args: dict) -> dict:
     return yaml.safe_load(rendered_manifest)
 
 
-def create_service(k8s: client.ApiClient, container: ContainerImage):
+def create_knative_service(k8s: client.ApiClient, container: ContainerImage):
     service_dict = render_manifest(
         "src/templates/",
         "kn_service.yaml.j2",
@@ -64,13 +59,3 @@ def create_service(k8s: client.ApiClient, container: ContainerImage):
     route = k8s_client.get_knative_route(f"{container.language}-{container.tag}", "default")
     url = route["status"]["url"]
     return url
-
-
-container = ContainerImage("python")
-
-container.Build("function_templates/python/", k8s_api)
-
-# Get the dns
-print(create_service(k8s_api, container))
-
-
