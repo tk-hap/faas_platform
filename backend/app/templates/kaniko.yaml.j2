@@ -1,16 +1,36 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: kaniko-{{ tag }}
+  name: {{ tag }}
+  namespace: kaniko
 spec:
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:latest
       args:
         - "--dockerfile=Dockerfile"
-        - "--context=git://github.com/tk-hap/faas_platform.git#refs/heads/function-templates"
-        - "--context-sub-path={{ context_sub_path }}"
+        - "--context=s3://{{ bucket }}/{{ context_path }}"
         - "--destination={{ registry }}:{{ tag }}"
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-storage-secret
+              key: access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-storage-secret
+              key: secret-access-key
+        - name: S3_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: s3-storage-secret
+              key: endpoint 
+        - name: AWS_REGION
+          value: "apac"
+        - name: S3_FORCE_PATH_STYLE
+          value: "true"
       volumeMounts:
         - name: kaniko-secret
           mountPath: /kaniko/.docker/

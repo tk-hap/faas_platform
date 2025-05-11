@@ -1,4 +1,5 @@
 from flask import Flask, request, make_response
+from handler import handler
 
 app = Flask(__name__)
 app.logger.setLevel('INFO')
@@ -22,17 +23,6 @@ def health_check():
     """
     return make_response("OK", 200)
 
-
-def handler(ctx: request):
-    """
-    This function is the entry point for the function.
-    It will be invoked by the FaaS platform.
-    """
-    
-    return {
-        "statusCode": 200,
-        "message": "Hello World"
-    }
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)

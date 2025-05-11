@@ -4,26 +4,49 @@ import type { CancelablePromise } from "./core/CancelablePromise"
 import { OpenAPI } from "./core/OpenAPI"
 import { request as __request } from "./core/request"
 import type {
-  CreateFunctionFunctionsLanguagePostData,
-  CreateFunctionFunctionsLanguagePostResponse,
+  CreateFunctionFunctionsPostData,
+  CreateFunctionFunctionsPostResponse,
+  DeleteFunctionFunctionsFunctionIdDeleteData,
+  DeleteFunctionFunctionsFunctionIdDeleteResponse,
 } from "./types.gen"
 
 export class DefaultService {
   /**
    * Create Function
    * @param data The data for the request.
-   * @param data.language
-   * @returns Function Successful Response
+   * @param data.requestBody
+   * @returns FunctionResponse Successful Response
    * @throws ApiError
    */
-  public static createFunctionFunctionsLanguagePost(
-    data: CreateFunctionFunctionsLanguagePostData,
-  ): CancelablePromise<CreateFunctionFunctionsLanguagePostResponse> {
+  public static createFunctionFunctionsPost(
+    data: CreateFunctionFunctionsPostData,
+  ): CancelablePromise<CreateFunctionFunctionsPostResponse> {
     return __request(OpenAPI, {
       method: "POST",
-      url: "/functions/{language}",
+      url: "/functions/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Function
+   * @param data The data for the request.
+   * @param data.functionId
+   * @returns unknown Successful Response
+   * @throws ApiError
+   */
+  public static deleteFunctionFunctionsFunctionIdDelete(
+    data: DeleteFunctionFunctionsFunctionIdDeleteData,
+  ): CancelablePromise<DeleteFunctionFunctionsFunctionIdDeleteResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/functions/{function_id}",
       path: {
-        language: data.language,
+        function_id: data.functionId,
       },
       errors: {
         422: "Validation Error",
