@@ -1,9 +1,18 @@
 import time
-import kubernetes
+from kubernetes import client
+from ..config import settings
+
+def get_k8s_custom_objects_client() -> client.CustomObjectsApi:
+    """Get the CustomObjectsApi client with proper config"""
+    return client.CustomObjectsApi(settings.get_k8s_client())
+
+def get_k8s_core_client() -> client.CoreV1Api:
+    """Get the CoreV1Api client with proper config"""
+    return client.CoreV1Api(settings.get_k8s_client())
 
 
 def get_knative_route(name: str, namespace: str):
-    client = kubernetes.client.CustomObjectsApi()
+    client = get_k8s_custom_objects_client()
     return client.get_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
@@ -14,7 +23,7 @@ def get_knative_route(name: str, namespace: str):
 
 
 def wait_for_completed(name: str, namespace: str, timeout: int):
-    client = kubernetes.client.CoreV1Api()
+    client = get_k8s_core_client()
     resp = client.read_namespaced_pod_status(name, namespace)
 
     t_start = time.perf_counter()

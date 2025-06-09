@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faas-api
+  namespace: faas-app
+  labels:
+    app: faas-api
+spec:
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: faas-api
+  template:
+    metadata:
+      labels:
+        app: faas-api
+    spec:
+      containers:
+      - name: faas-api
+        image: ghcr.io/tk-hap/faas_platform_backend:latest
+        ports:
+        - containerPort: 8080

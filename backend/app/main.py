@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .container import ContainerImage, create_knative_service, delete_knative_service
+from .config import settings
 
 app = FastAPI()
 
@@ -18,11 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-#TODO: Auth from within cluster https://github.com/kubernetes-client/python/blob/master/examples/in_cluster_config.py
-config.load_config()
-k8s_api = client.ApiClient()
-
+k8s_api = settings.get_k8s_client()
 
 class FunctionRequest(BaseModel):
     language: str
