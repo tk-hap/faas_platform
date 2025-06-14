@@ -62,7 +62,9 @@ async def create_function(function: FunctionRequest) -> FunctionResponse:
         return status.HTTP_500_INTERNAL_SERVER_ERROR
 
     # Schedule function cleanup
-    cleanup_time = datetime.now(timezone.utc) + timedelta(seconds=settings.function_cleanup_secs)
+    cleanup_time = datetime.now(timezone.utc) + timedelta(
+        seconds=settings.function_cleanup_secs
+    )
     print(cleanup_time)
     scheduler.add_job(
         delete_knative_service,
