@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from kubernetes import client, config, utils
 
 from contextlib import asynccontextmanager
-
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from fastapi import FastAPI, status
