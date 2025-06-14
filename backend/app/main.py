@@ -5,7 +5,7 @@ from kubernetes import client, config, utils
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from .container import ContainerImage, create_knative_service, delete_knative_service
@@ -57,14 +57,13 @@ async def create_function(function: FunctionRequest) -> FunctionResponse:
 
     try:
         url = create_knative_service(k8s_api, container)
-    except Exception:
-        return status.HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        raise HTTPException(status_code=500, f"Failed to create function: {str(e)}")
 
     # Schedule function cleanup
     cleanup_time = datetime.now(timezone.utc) + timedelta(
         seconds=settings.function_cleanup_secs
     )
-    print(cleanup_time)
     scheduler.add_job(
         delete_knative_service,
         "date",
@@ -85,7 +84,11 @@ async def create_function(function: FunctionRequest) -> FunctionResponse:
 async def delete_function(function_id: str):
     try:
         delete_knative_service(function_id)
-    except Exception:
-        return status.HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to delete function: {str(e)}"
+        )
 
-    return status.HTTP_200_OK
+    return {"message": f"Function {function_id} deleted successfully"}
+
+
