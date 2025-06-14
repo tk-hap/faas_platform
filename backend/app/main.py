@@ -5,7 +5,7 @@ from kubernetes import client, config, utils
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from .container import ContainerImage, create_knative_service, delete_knative_service
@@ -58,7 +58,7 @@ async def create_function(function: FunctionRequest) -> FunctionResponse:
     try:
         url = create_knative_service(k8s_api, container)
     except Exception as e:
-        raise HTTPException(status_code=500, f"Failed to create function: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create function: {str(e)}")
 
     # Schedule function cleanup
     cleanup_time = datetime.now(timezone.utc) + timedelta(
