@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     s3_endpoint_url: str
     s3_region_name: str = "apac"
 
+    # Function lifespan
+    function_cleanup_secs: int
+
     model_config = SettingsConfigDict(env_file=".env")
 
     def get_k8s_client(self) -> client.ApiClient:

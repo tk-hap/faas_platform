@@ -105,10 +105,11 @@ def create_knative_service(k8s: client.ApiClient, container: ContainerImage) -> 
 
 def delete_knative_service(function_id: str):
     k8s = client.CustomObjectsApi()
-    k8s.delete_namespaced_custom_object(
+    status = k8s.delete_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
         namespace="default",
         name=function_id,
-        plural="routes",
+        plural="services",
     )
+    return status
