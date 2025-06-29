@@ -11,6 +11,7 @@ spec:
         - "--dockerfile=Dockerfile"
         - "--context=s3://{{ bucket }}/{{ context_path }}"
         - "--destination={{ registry }}:{{ tag }}"
+        - "--skip-tls-verify"
       env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
@@ -31,11 +32,11 @@ spec:
           value: "apac"
         - name: S3_FORCE_PATH_STYLE
           value: "true"
-      #volumeMounts:
-        #- name: kaniko-secret
-        #  mountPath: /kaniko/.docker/
+      volumeMounts:
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker/
   restartPolicy: Never
-  #volumes:
-  #  - name: kaniko-secret
-  #    secret:
-  #      secretName: kaniko-secret
+  volumes:
+    - name: kaniko-secret
+      secret:
+        secretName: kaniko-secret
