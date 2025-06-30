@@ -11,6 +11,7 @@ spec:
         - "--dockerfile=Dockerfile"
         - "--context=s3://{{ bucket }}/{{ context_path }}"
         - "--destination={{ registry }}:{{ tag }}"
+        - "--skip-tls-verify"
       env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:

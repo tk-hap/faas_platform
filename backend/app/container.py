@@ -17,7 +17,9 @@ class ContainerImage:
     def __init__(self, language: str, tag: str = None):
         self.language = language
         self.tag = tag if tag else str(uuid4())
-        self.registry = "docker.io/tkhap/faas-func"
+        if not settings.container_registry:
+            raise ValueError("The 'container_registry' setting is missing or invalid.")
+        self.registry = settings.container_registry
         self.s3_client = boto3.client(
             service_name="s3",
             endpoint_url=settings.s3_endpoint_url,
