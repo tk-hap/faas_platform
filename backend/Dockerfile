@@ -26,7 +26,7 @@ ENV PYTHONPATH=/app
 
 COPY ./pyproject.toml ./uv.lock /app/
 
-COPY ./app /app/app
+COPY ./src /app/app
 
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
