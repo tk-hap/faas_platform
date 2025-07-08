@@ -28,7 +28,8 @@ def create_build_context(s3_client: Any, tag: str, body: str, bucket: str) -> st
     """Creates and uploads a build context to S3 compatible storage"""
 
     tar_file = f"{tag}.tar.gz"
-    template_dir = "templates/context/python/"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    template_dir = os.path.join(base_dir, "templates", "contexts", "python")
 
     with tarfile.open(tar_file, "w:gz") as tar:
         # Write handler
@@ -57,7 +58,10 @@ def create_build_context(s3_client: Any, tag: str, body: str, bucket: str) -> st
 def build_kaniko_pod_manifest(container_image: ContainerImage, build_context: str) -> dict:
     """Constructs the builder pod manifest."""
 
-    with open("templates/builder.yaml") as f:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    builder_path = os.path.join(base_dir, "templates", "builder.yaml")
+
+    with open(builder_path) as f:
         manifest = yaml.safe_load(f)
 
     manifest["metadata"]["name"] = container_image.tag
@@ -69,7 +73,7 @@ def build_kaniko_pod_manifest(container_image: ContainerImage, build_context: st
     return manifest
 
 
-def create(container_image_in: ContainerImageCreate, k8s_client: Any) -> ContainerImage:
+def create(k8s_api_client: Any, container_image_in: ContainerImageCreate) -> ContainerImage:
     """Creates a new container image."""
 
     tag = f"{container_image_in.language}-{str(uuid4())}"
@@ -83,7 +87,7 @@ def create(container_image_in: ContainerImageCreate, k8s_client: Any) -> Contain
     )
 
     builder = build_kaniko_pod_manifest(image, build_context)
-    utils.create_from_dict(k8s_client, builder, verbose=True)
+    utils.create_from_dict(k8s_api_client, builder, verbose=True)
     k8s_service.wait_for_completed(f"{tag}", "kaniko", 35)
 
     return image

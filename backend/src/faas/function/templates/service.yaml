@@ -1,11 +1,11 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: {{ language }}-{{ tag }}
+  name: REPLACE_TAG
 spec:
   template:
     spec:
       containers:
-        - image: {{ registry }}:{{ tag }}
+        - image: REPLACE_REGISTRY:REPLACE_TAG
           ports:
             - containerPort: 8080

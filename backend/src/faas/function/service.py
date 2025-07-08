@@ -1,5 +1,6 @@
 import time
 import yaml
+import os
 from typing import Any
 from kubernetes import utils
 
@@ -9,21 +10,24 @@ from faas.k8s.service import get_knative_route, get_k8s_custom_objects_client
 def build_kn_service_manifest(container_image: ContainerImage) -> dict:
     """Constructs knative service manifest"""
 
-    with open("templates/service.yaml") as f:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    service_path = os.path.join(base_dir, "templates", "service.yaml")
+
+    with open(service_path) as f:
         manifest = yaml.safe_load(f)
     
     manifest["metadata"]["name"] = container_image.tag
-    manifest["spec"]["template"]["spec"]["containers"]["image"] = f"{container_image.registry}:{container_image.tag}"
+    manifest["spec"]["template"]["spec"]["containers"][0]["image"] = f"{container_image.registry}:{container_image.tag}"
 
     return manifest
 
 
-def create(k8s_client: Any, container_image: ContainerImage) -> str:
+def create(k8s_api_client: Any, container_image: ContainerImage) -> str:
     """Creates the knative service"""
 
     service =  build_kn_service_manifest(container_image)
 
-    status = utils.create_from_dict(k8s_client, service, verbose=True, apply=True)
+    status = utils.create_from_dict(k8s_api_client, service, verbose=True, apply=True)
 
     # TODO: Wait for route to come up
     time.sleep(5)
