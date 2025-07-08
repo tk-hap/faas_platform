@@ -4,10 +4,10 @@ import type { CancelablePromise } from "./core/CancelablePromise"
 import { OpenAPI } from "./core/OpenAPI"
 import { request as __request } from "./core/request"
 import type {
-  CreateFunctionFunctionsPostData,
-  CreateFunctionFunctionsPostResponse,
-  DeleteFunctionFunctionsFunctionIdDeleteData,
-  DeleteFunctionFunctionsFunctionIdDeleteResponse,
+  CreateFunctionFunctionPostData,
+  CreateFunctionFunctionPostResponse,
+  DeleteFunctionFunctionFunctionIdDeleteData,
+  DeleteFunctionFunctionFunctionIdDeleteResponse,
 } from "./types.gen"
 
 export class DefaultService {
@@ -18,12 +18,12 @@ export class DefaultService {
    * @returns FunctionResponse Successful Response
    * @throws ApiError
    */
-  public static createFunctionFunctionsPost(
-    data: CreateFunctionFunctionsPostData,
-  ): CancelablePromise<CreateFunctionFunctionsPostResponse> {
+  public static createFunctionFunctionPost(
+    data: CreateFunctionFunctionPostData,
+  ): CancelablePromise<CreateFunctionFunctionPostResponse> {
     return __request(OpenAPI, {
       method: "POST",
-      url: "/functions/",
+      url: "/functions",
       body: data.requestBody,
       mediaType: "application/json",
       errors: {
@@ -39,12 +39,12 @@ export class DefaultService {
    * @returns unknown Successful Response
    * @throws ApiError
    */
-  public static deleteFunctionFunctionsFunctionIdDelete(
-    data: DeleteFunctionFunctionsFunctionIdDeleteData,
-  ): CancelablePromise<DeleteFunctionFunctionsFunctionIdDeleteResponse> {
+  public static deleteFunctionFunctionFunctionIdDelete(
+    data: DeleteFunctionFunctionFunctionIdDeleteData,
+  ): CancelablePromise<DeleteFunctionFunctionFunctionIdDeleteResponse> {
     return __request(OpenAPI, {
       method: "DELETE",
-      url: "/functions/{function_id}",
+      url: "/function/{function_id}",
       path: {
         function_id: data.functionId,
       },
