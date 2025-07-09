@@ -1,0 +1,11 @@
+.list {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f1f3f4;
+  border-radius: 6px;
+  font-size: 1.05em;
+}
+
+.list h2 {
+  margin-top: 0;
+} 
