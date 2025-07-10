@@ -1,4 +1,3 @@
-from datetime import timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -34,7 +33,7 @@ app.add_middleware(
 
 app.include_router(function_router, prefix="/functions")
 
-# The SPA frontend files MUST be the last thing in the routing, it'll match any path.
+# The SPA frontend files must be the last thing in the routing, it'll match any path.
 app.mount("/", StaticFiles(directory="src/faas/static/dist", html=True))
 
 
