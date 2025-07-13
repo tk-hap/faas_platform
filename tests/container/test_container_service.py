@@ -12,11 +12,12 @@ def test_create_build_context():
 
     # Setup test values
     bucket = "unittest"
-    s3_client = boto3.client(service_name="s3", region_name="ap-southeast-2")
+    region = "ap-southeast-2"  # Chosen for testing as it is a commonly used AWS region
+    s3_client = boto3.client(service_name="s3", region_name=region)
     # We need to create the bucket since this is all in Moto's 'virtual' AWS account
     s3_client.create_bucket(
         Bucket=bucket,
-        CreateBucketConfiguration={"LocationConstraint": "ap-southeast-2"},
+        CreateBucketConfiguration={"LocationConstraint": region},
     )
 
     # Call function to test
