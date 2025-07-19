@@ -98,7 +98,7 @@ def create(
     )
 
     image = ContainerImage(
-        language=language
+        language=language,
         tag=tag,
         registry=config.container_registry,
     )
