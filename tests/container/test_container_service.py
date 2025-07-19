@@ -19,10 +19,13 @@ def test_create_build_context():
         Bucket=bucket,
         CreateBucketConfiguration={"LocationConstraint": region},
     )
+    container_image_in = models.ContainerImageCreate(language="python", body="unittest")
 
-    # Call function to test
     obj = create_build_context(
-        s3_client=s3_client, tag="unittest", body="unittest", bucket=bucket
+        s3_client=s3_client,
+        container_image_in=container_image_in,
+        tag="unittest",
+        bucket=bucket,
     )
     obj_bucket, obj_key = obj.strip("s3://").split("/", 1)
 
