@@ -12,6 +12,7 @@ from faas.config import config
 from faas.k8s import service as k8s_service
 
 from .models import ContainerImage, ContainerImageCreate
+from .enums import HandlerFiles
 
 s3_client = boto3.client(
     service_name="s3",
@@ -24,18 +25,24 @@ s3_client = boto3.client(
 k8s_client = k8s_service.get_k8s_core_client()
 
 
-def create_build_context(s3_client: Any, tag: str, body: str, bucket: str) -> str:
+def create_build_context(
+    s3_client: Any, container_image_in: ContainerImageCreate, tag: str, bucket: str
+) -> str:
     """Creates and uploads a build context to S3 compatible storage"""
 
-    tar_file = f"{tag}.tar.gz"
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    template_dir = os.path.join(base_dir, "templates", "contexts", "python")
+    tar_file = f"{tag}.tar.gz"
+    template_dir = os.path.join(
+        base_dir, "templates", "contexts", container_image_in.language.value
+    )
+    # This should be tidied
+    handler_file = HandlerFiles[container_image_in.language.value].value
 
     with tarfile.open(tar_file, "w:gz") as tar:
         # Write handler
-        data = body.encode("utf-8")
+        data = container_image_in.body.encode("utf-8")
         file = BytesIO(data)
-        info = tarfile.TarInfo("handler.py")
+        info = tarfile.TarInfo(f"src/{handler_file}")
         info.size = len(data)
         tar.addfile(info, file)
 
@@ -47,7 +54,7 @@ def create_build_context(s3_client: Any, tag: str, body: str, bucket: str) -> st
     try:
         s3_client.upload_file(tar_file, bucket, tar_file)
     except ClientError as e:
-        raise f"Error uploading {tar_file}: {str(e)}"
+        raise RuntimeError(f"Error uploading {tar_file}: {str(e)}")
     finally:
         if os.path.exists(tar_file):
             os.remove(tar_file)
@@ -80,14 +87,17 @@ def create(
 ) -> ContainerImage:
     """Creates a new container image."""
 
-    tag = f"{container_image_in.language}-{str(uuid4())}"
+    tag = f"{container_image_in.language.value}-{str(uuid4())}"
 
     build_context = create_build_context(
-        s3_client, tag, container_image_in.body, config.s3_bucket
+        s3_client=s3_client,
+        container_image_in=container_image_in,
+        tag=tag,
+        bucket=config.s3_bucket,
     )
 
     image = ContainerImage(
-        language=container_image_in.language,
+        language=container_image_in.language.value,
         tag=tag,
         registry=config.container_registry,
     )
