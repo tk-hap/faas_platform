@@ -87,7 +87,8 @@ def create(
 ) -> ContainerImage:
     """Creates a new container image."""
 
-    tag = f"{container_image_in.language.value}-{str(uuid4())}"
+    language = container_image_in.language.value
+    tag = f"{language}-{str(uuid4())}"
 
     build_context = create_build_context(
         s3_client=s3_client,
@@ -97,7 +98,7 @@ def create(
     )
 
     image = ContainerImage(
-        language=container_image_in.language.value,
+        language=language
         tag=tag,
         registry=config.container_registry,
     )
