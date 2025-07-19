@@ -2,6 +2,8 @@ import time
 from kubernetes import client
 from faas.config import config
 
+from .exceptions import PodTimeoutError
+
 
 def get_k8s_custom_objects_client() -> client.CustomObjectsApi:
     """Get the CustomObjectsApi client with proper config"""
@@ -32,21 +34,26 @@ def get_knative_route(name: str, namespace: str):
 
 
 def wait_for_succeeded(name: str, namespace: str, timeout: int):
-    """Waits for 'Succeeded' status from pod"""
+    """Waits for 'Succeeded' status from pod. Raises on timeout with logs"""
 
+    # Could early exit on Error status
     client = get_k8s_core_client()
-    resp = client.read_namespaced_pod_status(name, namespace)
-
     t_start = time.perf_counter()
 
-    while resp.status.phase != "Succeeded":
-        t_check = time.perf_counter()
-        if t_check - t_start >= timeout:
-            return "Build timed out"
+    while True:
+        resp = client.read_namespaced_pod_status(name, namespace)
+        phase = resp.status.phase or ""
+
+        if phase == "Succeeded":
+            elapsed = round(time.perf_counter() - t_start)
+            print(f"Succeeded in {elapsed}")
+            return
+
+        if time.perf_counter() - t_start >= timeout:
+            logs = client.read_namespaced_pod_log(name, namespace)
+
+            raise PodTimeoutError(
+                f"Pod {name} did not succeed in {timeout}s.\n" f"Logs:\n {logs}"
+            )
 
         time.sleep(3)
-        resp = client.read_namespaced_pod_status(name, namespace)
-
-    t_stop = time.perf_counter()
-    duration = round(t_stop - t_start)
-    return f"Completed in {duration}"
