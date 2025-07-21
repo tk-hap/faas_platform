@@ -33,7 +33,7 @@ def test_create_build_context():
     response = s3_client.get_object(Bucket=obj_bucket, Key=obj_key)
     tar_bytes = response["Body"].read()
     with tarfile.open(fileobj=io.BytesIO(tar_bytes), mode="r:gz") as tar:
-        assert "handler.py" in tar.getnames()
+        assert "src/handler.py" in tar.getnames()
 
 
 def test_build_kaniko_pod_manifest():
