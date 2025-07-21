@@ -3,12 +3,12 @@ import tarfile
 import io
 
 from moto import mock_aws
-from faas.container import models
+from src.container import models
 
 
 @mock_aws
 def test_create_build_context():
-    from faas.container.service import create_build_context
+    from src.container.service import create_build_context
 
     # Setup test values
     bucket = "unittest"
@@ -37,7 +37,7 @@ def test_create_build_context():
 
 
 def test_build_kaniko_pod_manifest():
-    from faas.container.service import build_kaniko_pod_manifest
+    from src.container.service import build_kaniko_pod_manifest
 
     # Setup test values
     build_context = "s3://unittest/unittest.tar.gz"

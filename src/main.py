@@ -3,12 +3,13 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from faas.function.views import router as function_router
+from src.function.views import router as function_router
 
 from .config import config
 from .scheduler import scheduler
 
 k8s_client = config.get_k8s_client()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,5 +36,3 @@ app.include_router(function_router, prefix="/functions")
 
 # The SPA frontend files must be the last thing in the routing, it'll match any path.
 app.mount("/", StaticFiles(directory="src/faas/static/dist", html=True))
-
-

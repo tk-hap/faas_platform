@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from datetime import datetime, timezone, timedelta
 
-from faas.container import service as containers_service
-from faas.container.models import ContainerImageCreate
-from faas.k8s import service as k8s_service
-from faas.config import config
-from faas.scheduler import scheduler
+from src.container import service as containers_service
+from src.container.models import ContainerImageCreate
+from src.k8s import service as k8s_service
+from src.config import config
+from src.scheduler import scheduler
+from src.database import DbSession
 
 from .models import FunctionCreate, FunctionResponse
 from .service import create, delete
@@ -17,31 +18,16 @@ k8s_api_client = k8s_service.get_k8s_api_client()
 
 
 @router.post("", summary="Creates a single function")
-def create_function(function_in: FunctionCreate) -> FunctionResponse:
+def create_function(
+    function_in: FunctionCreate,
+    db_session: DbSession,
+) -> FunctionResponse:
     container_image_in = ContainerImageCreate(
         language=function_in.language, body=function_in.body
     )
     container = containers_service.create(k8s_api_client, container_image_in)
 
-    try:
-        url = create(k8s_api_client, container)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create function: {str(e)}",
-        )
-
-    # Schedule function cleanup
-    cleanup_time = datetime.now(timezone.utc) + timedelta(
-        seconds=config.function_cleanup_secs
-    )
-    scheduler.add_job(
-        delete,
-        "date",
-        run_date=cleanup_time,
-        args=[f"{container.tag}"],
-        misfire_grace_time=None,
-    )
+    url = create(k8s_api_client, db_session, container)
 
     return FunctionResponse(
         id=container.tag,
@@ -52,7 +38,9 @@ def create_function(function_in: FunctionCreate) -> FunctionResponse:
 
 
 @router.delete("/{function_id}", summary="Deletes a single function")
-async def delete_function(function_id: str, ):
+async def delete_function(
+    function_id: str,
+):
     try:
         delete(function_id)
     except Exception as e:
@@ -61,3 +49,10 @@ async def delete_function(function_id: str, ):
         )
 
     return {"message": f"Function {function_id} deleted successfully"}
+
+
+@router.get("/{function_id}/health", summary="Checks function health endpoint")
+async def function_health(
+    function_id: str,
+):
+    pass

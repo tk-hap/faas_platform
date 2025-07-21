@@ -8,8 +8,8 @@ from botocore.exceptions import ClientError
 from kubernetes import utils
 from typing import Any
 
-from faas.config import config
-from faas.k8s import service as k8s_service
+from src.config import config
+from src.k8s import service as k8s_service
 
 from .models import ContainerImage, ContainerImageCreate
 from .enums import HandlerFiles

@@ -1,6 +1,6 @@
 import time
 from kubernetes import client
-from faas.config import config
+from src.config import config
 
 from .exceptions import PodTimeoutError
 
