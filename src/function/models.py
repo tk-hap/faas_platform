@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import TIMESTAMP
 from src.models import Base, TimestampMixin
 
 
@@ -21,4 +22,6 @@ class FunctionResponse(BaseModel):
 class Function(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     url: Mapped[str]
-    expire_at: Mapped[datetime]
+    expire_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False
+    )

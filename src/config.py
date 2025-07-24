@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     container_registry: str
 
     # Function lifespan
-    function_cleanup_secs: int
+    FUNCTION_CLEANUP_SECS: int
 
     model_config = SettingsConfigDict(env_file=".env")
 

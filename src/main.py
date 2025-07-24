@@ -35,4 +35,4 @@ app.add_middleware(
 app.include_router(function_router, prefix="/functions")
 
 # The SPA frontend files must be the last thing in the routing, it'll match any path.
-app.mount("/", StaticFiles(directory="src/faas/static/dist", html=True))
+app.mount("/", StaticFiles(directory="src/static/dist", html=True))
