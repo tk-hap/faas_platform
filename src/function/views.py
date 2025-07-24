@@ -18,7 +18,7 @@ k8s_api_client = k8s_service.get_k8s_api_client()
 
 
 @router.post("", summary="Creates a single function")
-def create_function(
+async def create_function(
     function_in: FunctionCreate,
     db_session: DbSession,
 ) -> FunctionResponse:
@@ -27,7 +27,7 @@ def create_function(
     )
     container = containers_service.create(k8s_api_client, container_image_in)
 
-    url = create(k8s_api_client, db_session, container)
+    url = await create(k8s_api_client, db_session, container)
 
     return FunctionResponse(
         id=container.tag,

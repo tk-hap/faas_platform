@@ -31,7 +31,7 @@ def build_kn_service_manifest(container_image: ContainerImage) -> dict:
     return manifest
 
 
-def create(
+async def create(
     k8s_api_client: Any, db_session: AsyncSession, container_image: ContainerImage
 ) -> str:
     """Creates the knative service"""
@@ -52,7 +52,7 @@ def create(
     function = Function(url=url, expire_at=expire_at)
 
     db_session.add(function)
-    db_session.commit()
+    await db_session.commit()
 
     return url
 
