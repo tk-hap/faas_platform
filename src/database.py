@@ -8,7 +8,7 @@ from src.config import config
 
 async def get_db_session() -> AsyncIterator[AsyncSession]:
     engine = create_async_engine(config.DATABASE_URL)
-    factory = async_sessionmaker(engine)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory() as session:
         try:
             yield session
