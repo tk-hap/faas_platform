@@ -33,10 +33,9 @@ def create_build_context(
     base_dir = os.path.dirname(os.path.abspath(__file__))
     tar_file = f"{tag}.tar.gz"
     template_dir = os.path.join(
-        base_dir, "templates", "contexts", container_image_in.language.value
+        base_dir, "templates", "contexts", container_image_in.language
     )
-    # This should be tidied
-    handler_file = HandlerFiles[container_image_in.language.value].value
+    handler_file = HandlerFiles[container_image_in.language]
 
     with tarfile.open(tar_file, "w:gz") as tar:
         # Write handler
