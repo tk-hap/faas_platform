@@ -1,19 +1,19 @@
-import time
-from datetime import datetime, timezone, timedelta
-import yaml
 import os
+import time
+from datetime import datetime, timedelta, timezone
 from typing import Any
-from kubernetes import utils
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-import aiohttp
 
+import aiohttp
+import yaml
+from kubernetes import utils
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.config import config
 from src.container.models import ContainerImage
 from src.k8s.service import (
-    get_knative_route,
     get_k8s_custom_objects_client,
+    get_knative_route,
 )
-from src.config import config
 
 from .models import Function
 
@@ -37,7 +37,7 @@ def build_kn_service_manifest(container_image: ContainerImage) -> dict:
 
 async def create(
     k8s_api_client: Any, db_session: AsyncSession, container_image: ContainerImage
-) -> str:
+) -> Function:
     """Creates the knative service"""
     service = build_kn_service_manifest(container_image)
 
@@ -45,18 +45,8 @@ async def create(
 
     # Wait for route to come up
     time.sleep(1)
-
     route = get_knative_route(container_image.tag, "default")
-
     url = route["status"]["url"]
-
-    healthy = ""
-    while not healthy:
-        async with aiohttp.ClientSession() as client:
-            status = await fetch_status(client, f"{url}/healthz")
-
-        if status == 200:
-            healthy = True
 
     expire_at = datetime.now(timezone.utc) + timedelta(
         seconds=config.FUNCTION_CLEANUP_SECS
@@ -66,7 +56,7 @@ async def create(
     db_session.add(function)
     await db_session.commit()
 
-    return url
+    return function
 
 
 async def get(db_session: AsyncSession, function_id: str) -> Function | None:
