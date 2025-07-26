@@ -35,7 +35,7 @@ async def create_function(
     function = await create(k8s_api_client, db_session, container)
 
     # Wait for healthy
-    healthy = ""
+    healthy = False
     while not healthy:
         status = await fetch_status(
             http_session, f"{function.url}{FunctionEndpoints.HEALTH}"
