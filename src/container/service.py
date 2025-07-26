@@ -104,7 +104,6 @@ def create(
 
     builder = build_kaniko_pod_manifest(image, build_context)
     utils.create_from_dict(k8s_api_client, builder, verbose=True)
-    response = k8s_service.wait_for_succeeded(f"{tag}", "kaniko", 120)
-    print(response)
+    k8s_service.wait_for_succeeded(f"{tag}", "kaniko", 120)
 
     return image
