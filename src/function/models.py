@@ -20,7 +20,7 @@ class FunctionResponse(BaseModel):
 
 # SQLAlchemy Models
 class Function(TimestampMixin, Base):
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(primary_key=True)
     url: Mapped[str]
     expire_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False
