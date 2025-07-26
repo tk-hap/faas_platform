@@ -4,11 +4,15 @@ import yaml
 import os
 from typing import Any
 from kubernetes import utils
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiohttp import ClientSession as aiohttp_ClientSession
+import aiohttp
 
 from src.container.models import ContainerImage
-from src.k8s.service import get_knative_route, get_k8s_custom_objects_client
+from src.k8s.service import (
+    get_knative_route,
+    get_k8s_custom_objects_client,
+)
 from src.config import config
 
 from .models import Function
@@ -35,21 +39,29 @@ async def create(
     k8s_api_client: Any, db_session: AsyncSession, container_image: ContainerImage
 ) -> str:
     """Creates the knative service"""
-
     service = build_kn_service_manifest(container_image)
 
     status = utils.create_from_dict(k8s_api_client, service, verbose=True, apply=True)
 
-    # TODO: Wait for route to come up
-    time.sleep(5)
+    # Wait for route to come up
+    time.sleep(1)
 
-    route = get_knative_route(f"{container_image.tag}", "default")
+    route = get_knative_route(container_image.tag, "default")
+
     url = route["status"]["url"]
+
+    healthy = ""
+    while not healthy:
+        async with aiohttp.ClientSession() as client:
+            status = await fetch_status(client, f"{url}/healthz")
+
+        if status == 200:
+            healthy = True
 
     expire_at = datetime.now(timezone.utc) + timedelta(
         seconds=config.FUNCTION_CLEANUP_SECS
     )
-    function = Function(url=url, expire_at=expire_at)
+    function = Function(id=container_image.tag, url=url, expire_at=expire_at)
 
     db_session.add(function)
     await db_session.commit()
@@ -57,9 +69,13 @@ async def create(
     return url
 
 
+async def get(db_session: AsyncSession, function_id: str) -> Function | None:
+    """Returns a function based on the given id."""
+    return await db_session.get(Function, function_id)
+
+
 def delete(function_id: str):
     """Deletes knative function"""
-
     k8s_client = get_k8s_custom_objects_client()
 
     status = k8s_client.delete_namespaced_custom_object(
@@ -71,7 +87,7 @@ def delete(function_id: str):
     )
 
 
-async def check_up(session: aiohttp_ClientSession, url: str) -> int:
-    """Checks if function healthcheck is returning OK"""
+async def fetch_status(session: aiohttp.ClientSession, url: str) -> int:
+    """Returns HTTP status of endpoint"""
     async with session.get(url) as response:
-        return await response.status
+        return response.status

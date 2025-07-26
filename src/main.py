@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from aiohttp import ClientSession as AsyncHttpSession
 
 from src.function.views import router as function_router
 
@@ -15,9 +16,11 @@ k8s_client = config.get_k8s_client()
 async def lifespan(app: FastAPI):
     # Load APScheduler
     scheduler.start()
+    app.state.http_session = AsyncHttpSession()
     yield
     # Cleanup APScheduler
     scheduler.shutdown()
+    await app.state.http_session.close()
 
 
 app = FastAPI(root_path="/api", lifespan=lifespan)

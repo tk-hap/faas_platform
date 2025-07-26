@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
+from aiohttp import ClientSession as AsyncHttpSession
 
 from src.container import service as containers_service
 from src.container.models import ContainerImageCreate
@@ -7,9 +8,10 @@ from src.k8s import service as k8s_service
 from src.config import config
 from src.scheduler import scheduler
 from src.database import DbSession
+from src.dependencies import http_session
 
 from .models import FunctionCreate, FunctionResponse
-from .service import create, delete
+from .service import get, create, delete, fetch_status
 
 
 router = APIRouter()
@@ -54,5 +56,12 @@ async def delete_function(
 @router.get("/{function_id}/health", summary="Checks function health endpoint")
 async def function_health(
     function_id: str,
-):
-    pass
+    db_session: DbSession,
+    http_session: AsyncHttpSession = Depends(http_session),
+) -> bool | None:
+    """Checks function health endpoint and returns bool to indicate health"""
+    function = await get(db_session, function_id)
+    function_status = await fetch_status(http_session, f"{function.url}/healthz")
+
+    if function_status == status.HTTP_200_OK:
+        return True
