@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class FunctionEndpoints(Enum):
+class FunctionEndpoints(StrEnum):
     """Default endpoints for functions"""
 
     HEALTH = "/healthz"
