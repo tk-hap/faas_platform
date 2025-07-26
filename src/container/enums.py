@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class LanguageTypes(Enum):
+class LanguageTypes(StrEnum):
     python = "python"
     go = "go"
 
 
-class HandlerFiles(Enum):
+class HandlerFiles(StrEnum):
     python = "handler.py"
     go = "handle.go"

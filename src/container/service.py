@@ -8,8 +8,8 @@ from botocore.exceptions import ClientError
 from kubernetes import utils
 from typing import Any
 
-from faas.config import config
-from faas.k8s import service as k8s_service
+from src.config import config
+from src.k8s import service as k8s_service
 
 from .models import ContainerImage, ContainerImageCreate
 from .enums import HandlerFiles
@@ -33,10 +33,9 @@ def create_build_context(
     base_dir = os.path.dirname(os.path.abspath(__file__))
     tar_file = f"{tag}.tar.gz"
     template_dir = os.path.join(
-        base_dir, "templates", "contexts", container_image_in.language.value
+        base_dir, "templates", "contexts", container_image_in.language
     )
-    # This should be tidied
-    handler_file = HandlerFiles[container_image_in.language.value].value
+    handler_file = HandlerFiles[container_image_in.language]
 
     with tarfile.open(tar_file, "w:gz") as tar:
         # Write handler
@@ -105,6 +104,6 @@ def create(
 
     builder = build_kaniko_pod_manifest(image, build_context)
     utils.create_from_dict(k8s_api_client, builder, verbose=True)
-    k8s_service.wait_for_completed(f"{tag}", "kaniko", 35)
+    k8s_service.wait_for_succeeded(f"{tag}", "kaniko", 120)
 
     return image

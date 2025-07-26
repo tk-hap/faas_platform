@@ -3,7 +3,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from kubernetes import client
 from kubernetes import config as k8s_config
 
+
 class Settings(BaseSettings):
+    DATABASE_URL: str
     # K8s configuration
     in_cluster: bool = bool(os.getenv("KUBERNETES_SERVICE_HOST"))
 
@@ -16,7 +18,7 @@ class Settings(BaseSettings):
     container_registry: str
 
     # Function lifespan
-    function_cleanup_secs: int
+    FUNCTION_CLEANUP_SECS: int
 
     model_config = SettingsConfigDict(env_file=".env")
 
