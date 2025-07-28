@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP
 
 from src.models import Base, TimestampMixin
-from src.container.models import ContainerImage
 
 
 # Pydantic Models
@@ -24,14 +23,12 @@ class FunctionResponse(BaseModel):
 
 # SQLAlchemy Models
 class Function(TimestampMixin, Base):
-    id: Mapped[str] = mapped_column(
-        ForeignKey("container_images.tag"), primary_key=True
-    )
+    id: Mapped[str] = mapped_column(ForeignKey("container_image.tag"), primary_key=True)
     url: Mapped[str]
     expire_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False
     )
 
-    container_image: Mapped["ContainerImage"] = relationship(
-        back_populates="function", uselist=False
+    container_image: Mapped["ContainerImage"] = relationship(  # noqa: F821
+        "ContainerImage", back_populates="function", uselist=False
     )

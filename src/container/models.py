@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.function.models import Function
 from src.models import Base, TimestampMixin
 from .enums import LanguageTypes
 
@@ -14,9 +13,9 @@ class ContainerImageCreate(BaseModel):
 
 # SQLAlchemy models
 class ContainerImage(TimestampMixin, Base):
-    tag: Mapped[int] = mapped_column(primary_key=True)
+    tag: Mapped[str] = mapped_column(primary_key=True)
     language: Mapped[LanguageTypes]
     registry: Mapped[str]
-    function: Mapped["Function"] = relationship(
-        back_populates="container_image", uselist=False
+    function: Mapped["Function"] = relationship(  # noqa: F821
+        "Function", back_populates="container_image", uselist=False
     )

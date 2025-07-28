@@ -1,15 +1,11 @@
-from datetime import datetime, timezone
-
 from aiohttp import ClientSession as AsyncHttpSession
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.config import config
 from src.container import service as containers_service
 from src.container.models import ContainerImageCreate
 from src.database import DbSession
 from src.dependencies import http_session
 from src.k8s import service as k8s_service
-from src.scheduler import scheduler
 
 from .enums import FunctionEndpoints
 from .models import FunctionCreate, FunctionResponse
@@ -30,7 +26,9 @@ async def create_function(
     container_image_in = ContainerImageCreate(
         language=function_in.language, body=function_in.body
     )
-    container = containers_service.create(k8s_api_client, container_image_in)
+    container = await containers_service.create(
+        k8s_api_client, db_session, container_image_in
+    )
 
     function = await create(k8s_api_client, db_session, container)
 
