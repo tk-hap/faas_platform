@@ -64,17 +64,21 @@ async def get(db_session: AsyncSession, function_id: str) -> Function | None:
     return await db_session.get(Function, function_id)
 
 
-def delete(function_id: str):
-    """Deletes knative function"""
+async def delete(db_session: AsyncSession, function_id: str):
+    """Deletes existing function"""
     k8s_client = get_k8s_custom_objects_client()
+    function = await db_session.get(Function, function_id)
 
     status = k8s_client.delete_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
         namespace="default",
-        name=function_id,
+        name=function.id,
         plural="services",
     )
+
+    db_session.delete(function)
+    await db_session.commit()
 
 
 async def fetch_status(session: aiohttp.ClientSession, url: str) -> int:
