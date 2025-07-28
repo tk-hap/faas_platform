@@ -6,6 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from src.models import Base
+from src.container.models import ContainerImage
 from src.function.models import Function
 
 from src.config import config as app_config

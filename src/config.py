@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     s3_bucket: str
     s3_endpoint_url: str
     s3_region_name: str = "apac"
-    container_registry: str
+    CONTAINER_REGISTRY: str
 
     # Function lifespan
     FUNCTION_CLEANUP_SECS: int

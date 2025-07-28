@@ -1,18 +1,20 @@
-import yaml
 import os
 import tarfile
-import boto3
 from io import BytesIO
+from typing import Any
 from uuid import uuid4
+
+import boto3
+import yaml
 from botocore.exceptions import ClientError
 from kubernetes import utils
-from typing import Any
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import config
 from src.k8s import service as k8s_service
 
-from .models import ContainerImage, ContainerImageCreate
 from .enums import HandlerFiles
+from .models import ContainerImage, ContainerImageCreate
 
 s3_client = boto3.client(
     service_name="s3",
@@ -81,8 +83,10 @@ def build_kaniko_pod_manifest(
     return manifest
 
 
-def create(
-    k8s_api_client: Any, container_image_in: ContainerImageCreate
+async def create(
+    k8s_api_client: Any,
+    db_session: AsyncSession,
+    container_image_in: ContainerImageCreate,
 ) -> ContainerImage:
     """Creates a new container image."""
 
@@ -96,14 +100,17 @@ def create(
         bucket=config.s3_bucket,
     )
 
-    image = ContainerImage(
-        language=language,
+    container = ContainerImage(
         tag=tag,
-        registry=config.container_registry,
+        language=language,
+        registry=config.CONTAINER_REGISTRY,
     )
 
-    builder = build_kaniko_pod_manifest(image, build_context)
+    builder = build_kaniko_pod_manifest(container, build_context)
     utils.create_from_dict(k8s_api_client, builder, verbose=True)
     k8s_service.wait_for_succeeded(f"{tag}", "kaniko", 120)
 
-    return image
+    db_session.add(container)
+    await db_session.commit()
+
+    return container
