@@ -77,7 +77,7 @@ async def delete(db_session: AsyncSession, function_id: str):
         plural="services",
     )
 
-    db_session.delete(function)
+    await db_session.delete(function)
     await db_session.commit()
 
 
