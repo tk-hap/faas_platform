@@ -53,9 +53,10 @@ async def create_function(
 async def delete_function(
     function_id: str,
     db_session: DbSession,
+    http_session: AsyncHttpSession = Depends(http_session),
 ):
     try:
-        await delete(db_session, function_id)
+        await delete(db_session, http_session, function_id)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to delete function: {str(e)}"

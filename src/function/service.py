@@ -3,12 +3,13 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import aiohttp
 import yaml
 from kubernetes import utils
 from sqlalchemy.ext.asyncio import AsyncSession
+from aiohttp import ClientSession as AsyncHttpSession
 
 from src.config import config
+from src.container import service as container_service
 from src.container.models import ContainerImage
 from src.k8s.service import (
     get_k8s_custom_objects_client,
@@ -64,11 +65,21 @@ async def get(db_session: AsyncSession, function_id: str) -> Function | None:
     return await db_session.get(Function, function_id)
 
 
-async def delete(db_session: AsyncSession, function_id: str):
+async def delete(
+    db_session: AsyncSession, http_session: AsyncHttpSession, function_id: str
+):
     """Deletes existing function"""
     k8s_client = get_k8s_custom_objects_client()
     function = await db_session.get(Function, function_id)
 
+    container_image = function.container_image
+
+    if not function:
+        # #TODO: Replace with logging
+        print("Could not find function")
+        return
+
+    # Delete function from knative
     status = k8s_client.delete_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
@@ -80,8 +91,15 @@ async def delete(db_session: AsyncSession, function_id: str):
     await db_session.delete(function)
     await db_session.commit()
 
+    # Delete container from registry and db
+    await container_service.delete(
+        db_session,
+        http_session,
+        container_image.tag,
+    )
 
-async def fetch_status(session: aiohttp.ClientSession, url: str) -> int:
+
+async def fetch_status(session: AsyncHttpSession, url: str) -> int:
     """Returns HTTP status of endpoint"""
     async with session.get(url) as response:
         return response.status
