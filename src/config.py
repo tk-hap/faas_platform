@@ -9,13 +9,16 @@ class Settings(BaseSettings):
     # K8s configuration
     in_cluster: bool = bool(os.getenv("KUBERNETES_SERVICE_HOST"))
 
-    # ContainerBuilder configuration
+    # Container configuration
     aws_access_key_id: str
     aws_secret_access_key: str
     s3_bucket: str
     s3_endpoint_url: str
     s3_region_name: str = "apac"
     CONTAINER_REGISTRY: str
+    CONTAINER_REGISTRY_API_URL: str
+    CONTAINER_REGISTRY_USERNAME: str
+    CONTAINER_REGISTRY_PASSWORD: str
 
     # Function lifespan
     FUNCTION_CLEANUP_SECS: int
