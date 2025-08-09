@@ -52,9 +52,11 @@ async def create_function(
 @router.delete("/{function_id}", summary="Deletes a single function")
 async def delete_function(
     function_id: str,
+    db_session: DbSession,
+    http_session: AsyncHttpSession = Depends(http_session),
 ):
     try:
-        delete(function_id)
+        await delete(db_session, http_session, function_id)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to delete function: {str(e)}"

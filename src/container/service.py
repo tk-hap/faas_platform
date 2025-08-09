@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import boto3
 import yaml
+from aiohttp import ClientSession as AsyncHttpSession
 from botocore.exceptions import ClientError
 from kubernetes import utils
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,7 @@ from src.k8s import service as k8s_service
 
 from .enums import HandlerFiles
 from .models import ContainerImage, ContainerImageCreate
+from .registry.service import delete_container_image
 
 s3_client = boto3.client(
     service_name="s3",
@@ -114,3 +116,17 @@ async def create(
     await db_session.commit()
 
     return container
+
+
+async def delete(
+    db_session: AsyncSession, http_session: AsyncHttpSession, container_image_id: str
+):
+    # Should maybe cascade off function deletion
+    container = await db_session.get(ContainerImage, container_image_id)
+
+    await delete_container_image(http_session, "library", "functions", container.tag)
+
+    await db_session.delete(container)
+    await db_session.commit()
+
+    return

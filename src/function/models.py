@@ -30,5 +30,8 @@ class Function(TimestampMixin, Base):
     )
 
     container_image: Mapped["ContainerImage"] = relationship(  # noqa: F821
-        "ContainerImage", back_populates="function", uselist=False
+        "ContainerImage",
+        back_populates="function",
+        uselist=False,
+        lazy="selectin",
     )

@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from aiohttp import ClientSession as AsyncHttpSession
 
+from aiohttp import ClientSession as AsyncHttpSession
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+import src.function.scheduled
 from src.function.views import router as function_router
 
 from .config import config
@@ -24,6 +26,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(root_path="/api", lifespan=lifespan)
+
+# Jobs in queue
+scheduler.print_jobs()
 
 # Configure CORS
 app.add_middleware(
