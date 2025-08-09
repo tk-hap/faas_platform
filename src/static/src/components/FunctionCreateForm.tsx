@@ -3,14 +3,16 @@ import type { FunctionData } from '../App';
 import { createFunction } from '../api';
 import styles from './FunctionCreateForm.module.css';
 
-const DEFAULT_FUNCTION_BODY = `def handler(ctx):
-    """
-    This function is the entry point for the function.
-    It will be invoked by the FaaS platform.
-    """
+const DEFAULT_FUNCTION_BODY = `from runtime_models import Event, Context, Response
+
+def handler(event: Event, ctx: Context):
+    # User logic: can return dict (JSON), (dict, status), or Response()
     return {
-        "statusCode": 200,
-        "message": "Hello World"
+        "message": "Hello World",
+        "function_id": ctx.function_id,
+        "request_id": ctx.request_id,
+        "path": event.path,
+        "contract": ctx.contract_version,
     }`;
 
 const SUPPORTED_LANGUAGES = [
