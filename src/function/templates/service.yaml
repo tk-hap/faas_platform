@@ -9,3 +9,7 @@ spec:
         - image: REPLACE_REGISTRY:REPLACE_TAG
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /healthz
