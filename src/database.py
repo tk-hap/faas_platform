@@ -5,11 +5,12 @@ from fastapi import Depends
 
 from src.config import config
 
+engine = create_async_engine(config.DATABASE_URL)
+async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
 
 async def get_db_session() -> AsyncIterator[AsyncSession]:
-    engine = create_async_engine(config.DATABASE_URL)
-    factory = async_sessionmaker(engine, expire_on_commit=False)
-    async with factory() as session:
+    async with async_session_factory() as session:
         try:
             yield session
             await session.commit()
