@@ -1,0 +1,14 @@
+//package main
+
+func Handle(event Event, ctx Context) (Result, error) {
+	return Result{
+		StatusCode: 200,
+		Body: map[string]string{
+			"message":     "Hello World",
+			"function_id": ctx.FunctionID,
+			"request_id":  ctx.RequestID,
+			"path":        event.Path,
+			"contract":    ctx.ContractVersion,
+		},
+	}, nil
+}
