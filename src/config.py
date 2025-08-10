@@ -1,11 +1,14 @@
 import os
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Literal
+
 from kubernetes import client
 from kubernetes import config as k8s_config
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+    LOGGING_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     # K8s configuration
     in_cluster: bool = bool(os.getenv("KUBERNETES_SERVICE_HOST"))
 

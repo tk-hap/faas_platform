@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from aiohttp import ClientSession as AsyncHttpSession
@@ -10,6 +11,12 @@ from src.function.views import router as function_router
 
 from .config import config
 from .scheduler import scheduler
+from .logging import configure_logging
+
+# Configure logging level and format centrally
+log = logging.getLogger(__name__)
+configure_logging()
+
 
 k8s_client = config.get_k8s_client()
 
@@ -26,9 +33,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(root_path="/api", lifespan=lifespan)
-
-# Jobs in queue
-scheduler.print_jobs()
 
 # Configure CORS
 app.add_middleware(
