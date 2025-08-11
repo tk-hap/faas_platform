@@ -1,3 +1,4 @@
+import logging
 from aiohttp import ClientSession as AsyncHttpSession
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -10,6 +11,8 @@ from src.k8s import service as k8s_service
 from .enums import FunctionEndpoints
 from .models import FunctionCreate, FunctionResponse
 from .service import create, delete, fetch_status, get
+
+log = logging.getLogger(__name__)
 
 router = APIRouter()
 # TODO: Move to dependency injection
@@ -58,6 +61,7 @@ async def delete_function(
     try:
         await delete(db_session, http_session, function_id)
     except Exception as e:
+        log.exception(e, extra={"function_id": function_id})
         raise HTTPException(
             status_code=500, detail=f"Failed to delete function: {str(e)}"
         )
@@ -74,6 +78,7 @@ async def function_health(
     """Checks function health endpoint and returns bool to indicate health"""
     function = await get(db_session, function_id)
     if not function:
+        log.warning("Function not found", extra={"function_id": function_id})
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
 
     function_status = await fetch_status(

@@ -1,5 +1,6 @@
 import datetime
 import aiohttp
+import logging
 
 from sqlalchemy import select
 
@@ -9,6 +10,8 @@ from src.config import config
 
 from .models import Function
 from .service import delete
+
+log = logging.getLogger(__name__)
 
 
 @scheduler.scheduled_job(
@@ -25,4 +28,4 @@ async def function_delete_expired():
         for function in expired_functions:
             async with async_session_factory() as delete_db_session, aiohttp.ClientSession() as delete_http_session:
                 await delete(delete_db_session, delete_http_session, function.id)
-                print(f"Deleted {function.id}")
+                log.info(f"Deleted {function.id}")

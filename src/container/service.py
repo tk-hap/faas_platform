@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import boto3
 import yaml
+import logging
 from aiohttp import ClientSession as AsyncHttpSession
 from botocore.exceptions import ClientError
 from kubernetes import utils
@@ -17,6 +18,8 @@ from src.k8s import service as k8s_service
 from .enums import HandlerFiles
 from .models import ContainerImage, ContainerImageCreate
 from .registry.service import delete_container_image
+
+log = logging.getLogger(__name__)
 
 s3_client = boto3.client(
     service_name="s3",
@@ -57,6 +60,7 @@ def create_build_context(
     try:
         s3_client.upload_file(tar_file, bucket, tar_file)
     except ClientError as e:
+        log.exception(e)
         raise RuntimeError(f"Error uploading {tar_file}: {str(e)}")
     finally:
         if os.path.exists(tar_file):
@@ -121,7 +125,6 @@ async def create(
 async def delete(
     db_session: AsyncSession, http_session: AsyncHttpSession, container_image_id: str
 ):
-    # Should maybe cascade off function deletion
     container = await db_session.get(ContainerImage, container_image_id)
 
     await delete_container_image(http_session, "library", "functions", container.tag)
