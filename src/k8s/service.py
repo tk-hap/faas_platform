@@ -1,8 +1,11 @@
 import time
+import logging
 from kubernetes import client
 from src.config import config
 
 from .exceptions import PodTimeoutError
+
+log = logging.getLogger(__name__)
 
 
 def get_k8s_custom_objects_client() -> client.CustomObjectsApi:
@@ -46,7 +49,7 @@ def wait_for_succeeded(name: str, namespace: str, timeout: int):
 
         if phase == "Succeeded":
             elapsed = round(time.perf_counter() - t_start)
-            print(f"Succeeded in {elapsed}")
+            log.info(f"Succeeded in {elapsed}")
             return
 
         if time.perf_counter() - t_start >= timeout:

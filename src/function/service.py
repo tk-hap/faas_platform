@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import yaml
+import logging
 from kubernetes import utils
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiohttp import ClientSession as AsyncHttpSession
@@ -17,6 +18,8 @@ from src.k8s.service import (
 )
 
 from .models import Function
+
+log = logging.getLogger(__name__)
 
 
 def build_kn_service_manifest(container_image: ContainerImage) -> dict:
@@ -75,8 +78,7 @@ async def delete(
     container_image = function.container_image
 
     if not function:
-        # #TODO: Replace with logging
-        print("Could not find function")
+        log.warning("Could not find function", extra={"function_id": function_id})
         return
 
     # Delete function from knative
