@@ -1,21 +1,18 @@
+import logging
 import os
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import yaml
-import logging
-from kubernetes import utils
-from sqlalchemy.ext.asyncio import AsyncSession
 from aiohttp import ClientSession as AsyncHttpSession
+from kubernetes import client, utils
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import config
 from src.container import service as container_service
 from src.container.models import ContainerImage
-from src.k8s.service import (
-    get_k8s_custom_objects_client,
-    get_knative_route,
-)
+from src.k8s.service import get_knative_route
 
 from .models import Function
 
@@ -69,10 +66,12 @@ async def get(db_session: AsyncSession, function_id: str) -> Function | None:
 
 
 async def delete(
-    db_session: AsyncSession, http_session: AsyncHttpSession, function_id: str
+    k8s_client: client.CustomObjectsApi,
+    db_session: AsyncSession,
+    http_session: AsyncHttpSession,
+    function_id: str,
 ):
     """Deletes existing function"""
-    k8s_client = get_k8s_custom_objects_client()
     function = await db_session.get(Function, function_id)
 
     container_image = function.container_image

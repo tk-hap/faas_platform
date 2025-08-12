@@ -1,12 +1,14 @@
 import logging
 from aiohttp import ClientSession as AsyncHttpSession
 from fastapi import APIRouter, Depends, HTTPException, status
+from kubernetes import client as K8sClient
 
 from src.container import service as containers_service
 from src.container.models import ContainerImageCreate
 from src.database import DbSession
-from src.dependencies import http_session
+from src.dependencies import HttpSession
 from src.k8s import service as k8s_service
+from src.k8s.dependencies import K8sCustomObjectsClient, K8sCoreClient, K8sApiClient
 
 from .enums import FunctionEndpoints
 from .models import FunctionCreate, FunctionResponse
@@ -15,16 +17,14 @@ from .service import create, delete, fetch_status, get
 log = logging.getLogger(__name__)
 
 router = APIRouter()
-# TODO: Move to dependency injection
-k8s_client = k8s_service.get_k8s_core_client()
-k8s_api_client = k8s_service.get_k8s_api_client()
 
 
 @router.post("", summary="Creates a single function")
 async def create_function(
     function_in: FunctionCreate,
     db_session: DbSession,
-    http_session: AsyncHttpSession = Depends(http_session),
+    k8s_api_client: K8sApiClient,
+    http_session: HttpSession,
 ) -> FunctionResponse:
     container_image_in = ContainerImageCreate(
         language=function_in.language, body=function_in.body
@@ -56,10 +56,11 @@ async def create_function(
 async def delete_function(
     function_id: str,
     db_session: DbSession,
-    http_session: AsyncHttpSession = Depends(http_session),
+    k8s_custom_obj_client: K8sCustomObjectsClient,
+    http_session: HttpSession,
 ):
     try:
-        await delete(db_session, http_session, function_id)
+        await delete(k8s_custom_obj_client, db_session, http_session, function_id)
     except Exception as e:
         log.exception(e, extra={"function_id": function_id})
         raise HTTPException(
@@ -73,7 +74,7 @@ async def delete_function(
 async def function_health(
     function_id: str,
     db_session: DbSession,
-    http_session: AsyncHttpSession = Depends(http_session),
+    http_session: HttpSession,
 ) -> bool | None:
     """Checks function health endpoint and returns bool to indicate health"""
     function = await get(db_session, function_id)

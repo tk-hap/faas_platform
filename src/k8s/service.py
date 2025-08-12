@@ -1,14 +1,15 @@
 import time
 import logging
-from kubernetes import client
 
 from .exceptions import PodTimeoutError
+from .dependencies import k8s_custom_objects_client, k8s_core_client
 
 log = logging.getLogger(__name__)
 
 
-def get_knative_route(client: client.CustomObjectsApi, name: str, namespace: str):
+def get_knative_route(name: str, namespace: str):
     """Get the endpoint of an knative service"""
+    client = k8s_custom_objects_client()
     return client.get_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
@@ -18,11 +19,9 @@ def get_knative_route(client: client.CustomObjectsApi, name: str, namespace: str
     )
 
 
-def wait_for_succeeded(
-    client: client.CoreV1Api, name: str, namespace: str, timeout: int
-):
+def wait_for_succeeded(name: str, namespace: str, timeout: int):
     """Waits for 'Succeeded' status from pod. Raises on timeout with logs"""
-
+    client = k8s_core_client()
     # Could early exit on Error status
     t_start = time.perf_counter()
 
