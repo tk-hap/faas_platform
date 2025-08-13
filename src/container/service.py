@@ -29,8 +29,6 @@ s3_client = boto3.client(
     region_name=config.s3_region_name,
 )
 
-k8s_client = k8s_service.get_k8s_core_client()
-
 
 def create_build_context(
     s3_client: Any, container_image_in: ContainerImageCreate, tag: str, bucket: str
