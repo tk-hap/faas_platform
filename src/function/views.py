@@ -1,14 +1,11 @@
 import logging
-from aiohttp import ClientSession as AsyncHttpSession
-from fastapi import APIRouter, Depends, HTTPException, status
-from kubernetes import client as K8sClient
+from fastapi import APIRouter, HTTPException, status
 
 from src.container import service as containers_service
 from src.container.models import ContainerImageCreate
 from src.database import DbSession
 from src.dependencies import HttpSession
-from src.k8s import service as k8s_service
-from src.k8s.dependencies import K8sCustomObjectsClient, K8sCoreClient, K8sApiClient
+from src.k8s.dependencies import K8sCustomObjectsClient, K8sApiClient
 
 from .enums import FunctionEndpoints
 from .models import FunctionCreate, FunctionResponse

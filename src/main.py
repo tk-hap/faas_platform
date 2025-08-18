@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-import src.function.scheduled
 from src.function.views import router as function_router
 
 from .config import config

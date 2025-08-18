@@ -1,5 +1,5 @@
 # This template is overwritten by the user input
-from runtime_models import Context, Event, Response
+from runtime_models import Context, Event
 
 
 def handler(event: Event, ctx: Context):

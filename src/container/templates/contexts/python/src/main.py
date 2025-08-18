@@ -19,7 +19,6 @@ from runtime_models import (
     Event,
     Context,
     Response as FnResponse,
-    RUNTIME_CONTRACT_VERSION,
 )
 
 HANDLER_MODULE = os.getenv("FAAS_HANDLER_MODULE", "handler")

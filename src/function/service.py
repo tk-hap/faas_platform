@@ -42,7 +42,7 @@ async def create(
     """Creates the knative service"""
     service = build_kn_service_manifest(container_image)
 
-    status = utils.create_from_dict(k8s_api_client, service, verbose=True, apply=True)
+    utils.create_from_dict(k8s_api_client, service, verbose=True, apply=True)
 
     # Wait for route to come up
     time.sleep(1)
@@ -81,7 +81,7 @@ async def delete(
         return
 
     # Delete function from knative
-    status = k8s_client.delete_namespaced_custom_object(
+    k8s_client.delete_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
         namespace="default",
