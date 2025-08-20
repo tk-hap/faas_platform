@@ -26,11 +26,13 @@ ENV PYTHONPATH=/app
 
 COPY ./pyproject.toml ./uv.lock /app/
 
-COPY ./src /app/app
+COPY ./src /app/src
+
+COPY .env /app/.env
 
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
 
-CMD ["fastapi", "run", "app/main.py", "--port", "8080"]
+CMD ["fastapi", "run", "src/main.py", "--port", "8080"]
