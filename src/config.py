@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     LOGGING_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     # K8s configuration
     in_cluster: bool = bool(os.getenv("KUBERNETES_SERVICE_HOST"))
+    FUNCTION_NAMESPACE: str
 
     # Container configuration
     aws_access_key_id: str

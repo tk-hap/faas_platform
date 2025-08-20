@@ -42,11 +42,17 @@ async def create(
     """Creates the knative service"""
     service = build_kn_service_manifest(container_image)
 
-    utils.create_from_dict(k8s_api_client, service, verbose=True, apply=True)
+    utils.create_from_dict(
+        k8s_api_client,
+        service,
+        verbose=True,
+        namespace=config.FUNCTION_NAMESPACE,
+        apply=True,
+    )
 
     # Wait for route to come up
     time.sleep(1)
-    route = get_knative_route(container_image.tag, "default")
+    route = get_knative_route(container_image.tag, config.FUNCTION_NAMESPACE)
     url = route["status"]["url"]
 
     expire_at = datetime.now(timezone.utc) + timedelta(
@@ -84,7 +90,7 @@ async def delete(
     k8s_client.delete_namespaced_custom_object(
         group="serving.knative.dev",
         version="v1",
-        namespace="default",
+        namespace=config.FUNCTION_NAMESPACE,
         name=function.id,
         plural="services",
     )
