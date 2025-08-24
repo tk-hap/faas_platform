@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: faas-api-access-binding
+  namespace: functions
+subjects:
+  - kind: ServiceAccount
+    name: faas-api-service-account
+    namespace: faas
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: faas-api-access

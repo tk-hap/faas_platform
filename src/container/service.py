@@ -23,10 +23,10 @@ log = logging.getLogger(__name__)
 
 s3_client = boto3.client(
     service_name="s3",
-    endpoint_url=config.s3_endpoint_url,
-    aws_access_key_id=config.aws_access_key_id,
-    aws_secret_access_key=config.aws_secret_access_key,
-    region_name=config.s3_region_name,
+    endpoint_url=config.S3_ENDPOINT_URL,
+    aws_access_key_id=config.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
+    region_name=config.S3_REGION_NAME,
 )
 
 
@@ -101,7 +101,7 @@ async def create(
         s3_client=s3_client,
         container_image_in=container_image_in,
         tag=tag,
-        bucket=config.s3_bucket,
+        bucket=config.S3_BUCKET,
     )
 
     container = ContainerImage(
