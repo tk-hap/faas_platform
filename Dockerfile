@@ -28,8 +28,6 @@ COPY ./pyproject.toml ./uv.lock /app/
 
 COPY ./src /app/src
 
-COPY .env /app/.env
-
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
