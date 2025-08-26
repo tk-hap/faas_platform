@@ -13,45 +13,40 @@ COPY src/static/ ./
 # Build (Vite outputs to ./dist by default)
 RUN npm run build
 
-# ---------- Python base stage ----------
+# ---------- Python runtime stage ----------
 FROM python:3.12-slim-bookworm
 
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
-WORKDIR /app/
+WORKDIR /app
 
-# Install UV
+# uv binary
 COPY --from=ghcr.io/astral-sh/uv:0.7.3 /uv /uvx /bin/
 
-# Place executable at the front of the PATH
-ENV PATH="/app/.venv/bin:$PATH"
-
-# Compile bytecode
-ENV UV_COMPILE_BYTECODE=1
-
-# UV Cache
-ENV UV_LINK_MODE=copy
-
-# Install dependencies
+# Dependency resolution (no source yet, for cache efficiency)
+COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project
 
-ENV PYTHONPATH=/app
+# Copy backend source
+COPY src ./src
 
-COPY ./pyproject.toml ./uv.lock /app/
+# Copy built frontend assets
+COPY --from=frontend-build /frontend/dist ./src/static/dist
 
-COPY ./src /src
+# Install the project itself (places code into venv)
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
-# Copy built frontend assets from stage into the backend tree
-# Resulting runtime path: /app/src/static/dist
-COPY --from=frontend-build /frontend/dist /src/static/dist
+# Ensure dist exists (fail fast if frontend missed)
+RUN test -d ./src/static/dist || (echo "Missing static dist" && exit 1)
 
-# Sync the project
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
+# Put venv first
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH=/app
 
 EXPOSE 8080
 
-CMD ["fastapi", "run", "src/main.py", "--port", "8080"]
+# Prefer uvicorn directly (fastapi run wraps uvicorn, but explicit is clearer)
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
