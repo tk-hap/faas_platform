@@ -1,3 +1,19 @@
+# ---------- Frontend build stage ----------
+FROM node:20-alpine AS frontend-build
+WORKDIR /frontend
+
+# Install only what we need first for better layer caching
+COPY src/static/package.json src/static/package-lock.json* ./ 
+RUN --mount=type=cache,target=/root/.npm \
+    if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+# Copy the remaining frontend source (vite config, ts, public, etc.)
+COPY src/static/ ./
+
+# Build (Vite outputs to ./dist by default)
+RUN npm run build
+
+# ---------- Python base stage ----------
 FROM python:3.12-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
@@ -28,9 +44,14 @@ COPY ./pyproject.toml ./uv.lock /app/
 
 COPY ./src /app/src
 
+# Copy built frontend assets from stage into the backend tree
+# Resulting runtime path: /app/src/static/dist
+COPY --from=frontend-build /frontend/dist /app/src/static/dist
+
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
+EXPOSE 8080
 
 CMD ["fastapi", "run", "src/main.py", "--port", "8080"]
