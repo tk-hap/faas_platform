@@ -42,11 +42,11 @@ ENV PYTHONPATH=/app
 
 COPY ./pyproject.toml ./uv.lock /app/
 
-COPY ./src /app/src
+COPY ./src /src
 
 # Copy built frontend assets from stage into the backend tree
 # Resulting runtime path: /app/src/static/dist
-COPY --from=frontend-build /frontend/dist /app/src/static/dist
+COPY --from=frontend-build /frontend/dist /src/static/dist
 
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
