@@ -18,6 +18,12 @@ spec:
       serviceAccountName: faas-api-service-account
       containers:
       - name: faas-api
-        image: ghcr.io/tk-hap/faas_platform_backend:latest
+        image: ghcr.io/tk-hap/faas_platform:k8s-deployment
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: env-secrets
+        - configMapRef:
+            name: env-configmap
