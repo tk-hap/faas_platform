@@ -3,6 +3,7 @@ import json
 import os
 import time
 import uuid
+import traceback
 from typing import Callable, Any
 
 from starlette.applications import Starlette
@@ -78,6 +79,7 @@ async def invoke(request: Request) -> StarletteResponse:
         return JSONResponse(payload, status_code=status, headers=headers)
     except Exception as exc:  # noqa: BLE001
         dur_ms = (time.perf_counter() - started) * 1000
+        traceback.print_exc()
         log_line = {
             "level": "error",
             "msg": "request_error",

@@ -6,7 +6,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: faas-api-service-account
-    namespace: faas
+    namespace: faas-app
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

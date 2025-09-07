@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-configmap
+  namespace: faas-app
+data:
+  LOGGING_LEVEL: "INFO"
+  LOG_JSON: "false"
+  S3_BUCKET: "faas-platform-build-contexts"
+  S3_ENDPOINT_URL: "https://01691522d1b29d249548ed4899775e34.r2.cloudflarestorage.com/"
+  FUNCTION_CLEANUP_SECS: "600"
+  FUNCTION_NAMESPACE: "functions"
+  CONTAINER_REGISTRY: "harbor.192-168-0-207.sslip.io:30443/library/functions"
+  CONTAINER_REGISTRY_API_URL: "https://harbor.192-168-0-207.sslip.io:30443/api/v2.0"
