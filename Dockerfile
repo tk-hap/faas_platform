@@ -30,7 +30,9 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project
 
-# Copy backend source
+# Copy backend source and Alembic migration assets
+COPY alembic.ini ./
+COPY alembic ./alembic
 COPY src ./src
 
 # Copy built frontend assets
