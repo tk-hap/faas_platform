@@ -76,6 +76,10 @@ data:
     metrics: 0.0.0.0:2000
     no-autoupdate: true
     ingress:
+    - hostname: 'faas.3lectricsheep.com'
+      service: http://faas-api-service.faas-app.svc.cluster.local:80
+      originRequest:
+        noTLSVerify: true
     - hostname: '*.3lectricsheep.com'
       service:  http://kourier-internal.kourier-system.svc.cluster.local:80
       originRequest:

@@ -1,0 +1,1 @@
+ kubectl exec -n faas-app deploy/faas-api -- python -m src.db_migrate #(or add arguments e.g. downgrade -1)
