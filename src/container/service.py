@@ -33,38 +33,47 @@ s3_client = boto3.client(
 def create_build_context(
     s3_client: Any, container_image_in: ContainerImageCreate, tag: str, bucket: str
 ) -> str:
-    """Creates and uploads a build context to S3 compatible storage"""
+    """Create & upload build context in memory."""
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    tar_file = f"{tag}.tar.gz"
     template_dir = os.path.join(
         base_dir, "templates", "contexts", container_image_in.language
     )
     handler_file = HandlerFiles[container_image_in.language]
+    tar_key = f"{tag}.tar.gz"
 
-    with tarfile.open(tar_file, "w:gz") as tar:
-        # Write handler
+    buf = BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+        # Add user handler body
         data = container_image_in.body.encode("utf-8")
-        file = BytesIO(data)
-        info = tarfile.TarInfo(f"src/{handler_file}")
-        info.size = len(data)
-        tar.addfile(info, file)
+        h_info = tarfile.TarInfo(f"src/{handler_file}")
+        h_info.size = len(data)
+        tar.addfile(h_info, BytesIO(data))
 
-        files = os.listdir(template_dir)
-        for file in files:
-            file_path = os.path.join(template_dir, file)
-            tar.add(file_path, arcname=file)
+        # Add template files; avoid duplicating handler file if present
+        for entry in os.listdir(template_dir):
+            entry_path = os.path.join(template_dir, entry)
+            if entry == handler_file:
+                continue
+            if os.path.isdir(entry_path):
+                for root, _, files in os.walk(entry_path):
+                    for f in files:
+                        fp = os.path.join(root, f)
+                        arcname = os.path.relpath(fp, template_dir)
+                        tar.add(fp, arcname=arcname)
+            else:
+                tar.add(entry_path, arcname=entry)
 
+    buf.seek(0)
     try:
-        s3_client.upload_file(tar_file, bucket, tar_file)
+        s3_client.upload_fileobj(buf, bucket, tar_key)
     except ClientError as e:
-        log.exception(e)
-        raise RuntimeError(f"Error uploading {tar_file}: {str(e)}")
+        log.exception("Upload failed for %s: %s", tar_key, e)
+        raise RuntimeError(f"Error uploading {tar_key}: {e}")
     finally:
-        if os.path.exists(tar_file):
-            os.remove(tar_file)
+        buf.close()
 
-    return f"s3://{bucket}/{tar_file}"
+    return f"s3://{bucket}/{tar_key}"
 
 
 def build_kaniko_pod_manifest(
