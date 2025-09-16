@@ -1,0 +1,55 @@
+{{- if .Values.rbac.create }}
+# Roles for functions namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: faas-api-access
+  namespace: {{ .Values.namespace.functions }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/status", "pods/log"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["serving.knative.dev"]
+    resources: ["services", "routes", "configurations", "revisions"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Roles for kaniko namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: faas-api-access
+  namespace: {{ .Values.namespace.kaniko }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/status", "pods/log"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# RoleBindings
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: faas-api-functions-binding
+  namespace: {{ .Values.namespace.functions }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "faas-platform.serviceAccountName" . }}
+    namespace: {{ .Values.namespace.app }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: faas-api-access
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: faas-api-kaniko-binding
+  namespace: {{ .Values.namespace.kaniko }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "faas-platform.serviceAccountName" . }}
+    namespace: {{ .Values.namespace.app }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: faas-api-access
+{{- end }}

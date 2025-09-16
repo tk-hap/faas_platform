@@ -1,0 +1,97 @@
+# Default values for faas-platform Helm chart
+image:
+  repository: ghcr.io/tk-hap/faas_platform
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+namespace:
+  app: faas-app
+  functions: functions
+  kaniko: kaniko
+
+serviceAccount:
+  create: true
+  name: ""
+
+migrations:
+  enabled: true
+
+resources: {}
+  # requests:
+  #   cpu: 100m
+  #   memory: 256Mi
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+egresPolicy:
+  enabled: false
+  allowedFQDNs:
+    - httpbin.org
+    - api.github.com
+    - cache.r2.cloudflarestorage.com
+
+knative:
+  enabled: true
+  minScale: 0
+  maxScale: 5
+
+config:
+  # Placeholder for environment configuration keys
+  REGISTRY_URL: "registry.example.com"
+  S3_ENDPOINT: "https://s3.example.com"
+  S3_BUCKET: "faas-build-contexts"
+
+extraEnv: []
+  # - name: SOME_VAR
+  #   value: some-value
+
+podAnnotations: {}
+
+securityContext: {}
+
+podSecurityContext: {}
+
+networkPolicy:
+  enabled: false
+
+ciliumEgress:
+  enabled: false
+  dnsSelector: kube-dns
+  allowedDomains:
+    - httpbin.org
+    - api.github.com
+
+rbac:
+  create: true
+
+# Optionally override fullname
+fullnameOverride: ""
+nameOverride: ""
+
+secrets:
+  create: false            # set true to have chart create a Secret from stringData below
+  name: faas-platform-env   # name to use when creating (ignored if existingSecret provided)
+  existingSecret: ""        # if set, chart will NOT create, will just reference this secret
+  type: Opaque
+  stringData: {}
+    # DATABASE_URL: "postgresql+asyncpg://user:pass@host:5432/db"
+    # AWS_ACCESS_KEY_ID: ""
+    # AWS_SECRET_ACCESS_KEY: ""
+    # CONTAINER_REGISTRY_USERNAME: ""
+    # CONTAINER_REGISTRY_PASSWORD: ""
+  # Never commit real secret values. Prefer external secret managers in production.
+  # For production consider ExternalSecrets, SealedSecrets, or vault-injectors instead.

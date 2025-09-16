@@ -1,0 +1,17 @@
+apiVersion: v2
+name: faas-platform
+version: 0.1.0
+appVersion: "0.1.0"
+description: Serverless FaaS platform (FastAPI + Kaniko + Knative)
+type: application
+keywords:
+  - faas
+  - knative
+  - kaniko
+  - fastapi
+home: https://github.com/tk-hap/faas_platform
+sources:
+  - https://github.com/tk-hap/faas_platform
+maintainers:
+  - name: tk-hap
+    email: example@example.com

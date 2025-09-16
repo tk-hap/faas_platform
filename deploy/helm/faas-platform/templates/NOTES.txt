@@ -1,0 +1,26 @@
+Thank you for installing the {{ .Chart.Name }} chart.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+1. Migration Job (if enabled):
+   kubectl -n {{ .Release.Namespace }} get jobs -l app.kubernetes.io/instance={{ .Release.Name }}
+
+2. Deployment status:
+   kubectl -n {{ .Release.Namespace }} get deploy {{ include "faas-platform.fullname" . }}
+
+3. Service (ClusterIP):
+   kubectl -n {{ .Release.Namespace }} get svc {{ include "faas-platform.fullname" . }}
+
+4. Logs (first pod):
+   kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "faas-platform.fullname" . }} -f
+
+5. Create a function (example curl):
+   curl -X POST "$API_URL/api/functions" -H 'Content-Type: application/json' \
+     -d '{"language":"python","code":"def handler(event, ctx):\n  return {\"ok\": True}"}'
+
+6. List Knative Services (functions ns):
+   kubectl -n {{ .Values.namespace.functions }} get ksvc
+
+7. Delete release:
+   helm uninstall {{ .Release.Name }} -n {{ .Release.Namespace }}
