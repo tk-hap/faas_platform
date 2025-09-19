@@ -1,0 +1,50 @@
+image:
+  repository: ghcr.io/tk-hap/faas_platform
+  tag: main
+  pullPolicy: Always
+
+replicaCount: 2
+
+namespace:
+  app: faas-app
+  functions: functions
+  kaniko: kaniko
+
+serviceAccount:
+  create: true
+  name: faas-api-service-account
+
+rbac:
+  create: true                     # generates Roles/RoleBindings like functionRole/kanikoRole
+
+migrations:
+  enabled: true                    # ensures the migration Job runs
+
+config:                            # replaces old ConfigMap (env-configmap)
+  LOGGING_LEVEL: "INFO"
+  LOG_JSON: "false"
+  S3_BUCKET: "faas-platform-build-contexts"
+  S3_ENDPOINT_URL: "https://01691522d1b29d249548ed4899775e34.r2.cloudflarestorage.com/"
+  FUNCTION_CLEANUP_SECS: "600"
+  FUNCTION_NAMESPACE: "functions"
+  CONTAINER_REGISTRY: "harbor.192-168-0-207.sslip.io:30443/library/functions"
+  CONTAINER_REGISTRY_API_URL: "https://harbor.192-168-0-207.sslip.io:30443/api/v2.0"
+
+# Use existing secret instead of creating a new one
+secrets:
+  create: false
+  existingSecret: env-secrets
+
+
+# Optional extra env (non-secret)
+extraEnv: []
+
+ciliumEgress:
+  enabled: true
+  allowedDomains:
+    - httpbin.org
+    - api.ipify.org
+    - jsonplaceholder.typicode.com
+    - worldtimeapi.org
+
+resources: {}

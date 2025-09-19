@@ -121,7 +121,7 @@ async def create(
 
     builder = build_kaniko_pod_manifest(container, build_context)
     utils.create_from_dict(k8s_api_client, builder, verbose=True)
-    k8s_service.wait_for_succeeded(f"{tag}", "kaniko", 120)
+    k8s_service.wait_for_succeeded(f"{tag}", "kaniko", 180)
 
     db_session.add(container)
     await db_session.commit()

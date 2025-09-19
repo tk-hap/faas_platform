@@ -3,11 +3,11 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: {{ include "faas-platform.fullname" . }}-egress
+  namespace: {{ .Values.namespace.functions | default "functions" | quote }}
 spec:
-  endpointSelector:
-    matchLabels:
-      app.kubernetes.io/name: {{ include "faas-platform.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+  # Apply to all pods in the functions namespace. If you want a narrower match,
+  # add labels to function pods and replace endpointSelector with matchLabels.
+  endpointSelector: {}
   egress:
     - toFQDNs:
 {{- range .Values.ciliumEgress.allowedDomains }}

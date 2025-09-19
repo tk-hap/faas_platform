@@ -44,5 +44,5 @@ spec:
             - secretRef:
                 name: {{ $secretName }}
             {{- end }}
-          command: ["python", "-m", "src.db_migrate", "upgrade", "head"]
+          command: ["python", "-m", "src.db_migrate"]
 {{- end }}
