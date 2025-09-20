@@ -58,17 +58,6 @@ Components:
 
 ---
 
-## Data Model Overview
-
-Simplified (see `src/container/models.py` & `src/function/models.py`):
-
-```
-ContainerImage(tag PK, language, registry, created_at, updated_at, 1-1 -> Function)
-Function(id FK->ContainerImage.tag, url, expire_at, created_at, updated_at)
-```
-
----
-
 ## Local Development
 
 ### Prerequisites
@@ -128,7 +117,7 @@ Ensure `.env` contains all required variables.
 
 ## Helm Deployment
 
-Chart: `deploy/helm/faas-platform`
+Chart: `helm/faas-platform`
 
 Values highlights (`values.yaml`):
 - `namespace.*` – logical separation: `app` (API), `functions` (Knative services), `kaniko` (builder pods)
