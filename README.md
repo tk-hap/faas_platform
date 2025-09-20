@@ -10,7 +10,7 @@ Ephemeral Function-as-a-Service platform that lets users submit short function s
 - **On‑Demand Image Builds**: Build context assembled fully in‑memory and uploaded to S3 / R2. Kaniko pod builds and pushes the image without requiring privileged Docker.
 - **Multi‑Language Ready**: Pluggable templates by language (see `src/container/templates/contexts/<language>` and `HandlerFiles` enum).
 - **Autoscaling & Scale-to-Zero**: Relies on Knative for request‑driven scaling.
-- **Helm Deployable**: Complete chart in `deploy/helm/faas-platform` including optional Cilium egress policy, secrets, RBAC, and migration job.
+- **Helm Deployable**: Complete chart in `helm/faas-platform` including optional Cilium egress policy, secrets, RBAC, and migration job.
 - **Database Persistence**: PostgreSQL (async SQLAlchemy + Alembic) tracks container images and functions (TTL metadata).
 - **In‑Cluster & Local Modes**: Kubernetes client auto-detects in-cluster configuration.
 - **Static SPA Frontend**: Built with Vite/TypeScript and served by FastAPI from `src/static/dist`.
